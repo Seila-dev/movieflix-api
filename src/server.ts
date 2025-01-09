@@ -20,7 +20,7 @@ app.get("/movies", async (_, res) => {
     res.json(movies);
 });
 
-app.post("/movies", async (req, res) => {
+app.post("/movies", async (req, res): Promise<any> => {
     const { title, genre_id, language_id, oscar_count, release_date } = req.body;
 
     try {
@@ -44,14 +44,14 @@ app.post("/movies", async (req, res) => {
                 release_date: new Date(release_date)
             }
         });
-    } catch (error) {
+    } catch {
         return res.status(500).send({ message: "Falha no servidor" });
     }
 
     res.status(201).send();
 });
 
-app.put("/movies/:id", async (req, res) => {
+app.put("/movies/:id", async (req, res): Promise<any> => {
     const id = Number(req.params.id);
 
     try {
@@ -74,14 +74,14 @@ app.put("/movies/:id", async (req, res) => {
             },
             data: data
         })
-    } catch (error) {
+    } catch {
         return res.status(500).send({ message: "Falha ao atualizar o registro de filme" })
     }
 
     res.status(200).send();
 })
 
-app.delete("/movies/:id", async (req, res) => {
+app.delete("/movies/:id", async (req, res): Promise<any> => {
     const id = Number(req.params.id);
 
     try {
@@ -92,11 +92,33 @@ app.delete("/movies/:id", async (req, res) => {
     }
 
     await prisma.movie.delete({ where: { id }})
-    } catch (error) {
+    } catch {
         return res.status(500).send({ message: "Não foi possível remover o filme" })
     }
 
     res.status(200).send();
+})
+
+app.get("/movies/:genreName", async (req, res) => {
+    try {
+        const movieFilteredByGenreName = await prisma.movie.findMany({
+            include: {
+                genres: true,
+                languages: true,
+            },
+            where: {
+                genres: {
+                    name: {
+                        equals: req.params.genreName,
+                        mode: "insensitive",
+                    },
+                },
+            },
+        });
+        res.status(200).send(movieFilteredByGenreName);
+    } catch {
+        res.status(500).send({ message: "Falha ao filtrar filmes por gênero" });
+    }
 })
 
 app.listen(port, () => {
