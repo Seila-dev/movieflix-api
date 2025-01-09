@@ -90,6 +90,41 @@
                     }
                 }
             }
+        },
+        "/movies/{genreName}": {
+            "get": {
+                "tags": ["Movie"],
+                "summary": "Filtrar filmes por gênero",
+                "parameters": [
+                    {
+                        "name": "genreName",
+                        "in": "path",
+                        "required": true,
+                        "description": "Nome do gênero",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "items": {
+                                    "$ref": "#/components/schemas/Movie"
+                                }
+                                
+                            }
+                        }
+                    }
+                    },
+                    "500": {
+                        "description": "Falha ao filtrar filmes por gênero"
+                    }
+                }
+            }
         }
     },
     "components": {
