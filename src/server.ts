@@ -63,14 +63,14 @@ app.put("/movies/:id", async (req, res): Promise<any> => {
                 id
             }
         });
-        
-        if (!movie){
+
+        if (!movie) {
             return res.status(404).send({ message: "Filme não encontrado" });
         }
-    
+
         const data = { ...req.body };
         data.release_date = data.release_date ? new Date(data.release_date) : undefined;
-    
+
         await prisma.movie.update({
             where: {
                 id: id
@@ -88,13 +88,13 @@ app.delete("/movies/:id", async (req, res): Promise<any> => {
     const id = Number(req.params.id);
 
     try {
-        const movie = await prisma.movie.findUnique({ where: { id }});
+        const movie = await prisma.movie.findUnique({ where: { id } });
 
-    if(!movie){
-        return res.status(404).send({ message: "O filme não foi encontrado" })
-    }
+        if (!movie) {
+            return res.status(404).send({ message: "O filme não foi encontrado" })
+        }
 
-    await prisma.movie.delete({ where: { id }})
+        await prisma.movie.delete({ where: { id } })
     } catch {
         return res.status(500).send({ message: "Não foi possível remover o filme" })
     }
@@ -124,12 +124,12 @@ app.get("/movies/:genreName", async (req, res) => {
     }
 })
 
-app.put("/genres/:id", async (req, res):Promise<any> => {
+app.put("/genres/:id", async (req, res): Promise<any> => {
     const { id } = req.params;
     const { name } = req.body;
 
-    if(!name) {
-        return res.status(400).send({ message: "O nome é necessário"} )
+    if (!name) {
+        return res.status(400).send({ message: "O nome é necessário" })
     }
 
     try {
@@ -138,7 +138,7 @@ app.put("/genres/:id", async (req, res):Promise<any> => {
                 id: Number(id)
             }
         });
-        if(!genre) {
+        if (!genre) {
             return res.status(404).send({ message: "Gênero não encontrado" });
         }
 
@@ -154,7 +154,7 @@ app.put("/genres/:id", async (req, res):Promise<any> => {
             }
         })
 
-        if(existingGenre){
+        if (existingGenre) {
             return res.status(409).send({ message: "Este nome de gênero já existe." })
         }
 
@@ -162,8 +162,8 @@ app.put("/genres/:id", async (req, res):Promise<any> => {
             where: {
                 id: Number(id),
             },
-            data: { 
-                name: name, 
+            data: {
+                name: name,
             }
         });
         res.status(200).json(updatedGenre);
@@ -176,7 +176,7 @@ app.put("/genres/:id", async (req, res):Promise<any> => {
 app.post("/genres", async (req, res): Promise<any> => {
     const { name } = req.body;
 
-    if(!name){
+    if (!name) {
         return res.status(400).send({ message: "O gênero precisa ter um nome." })
     }
 
@@ -189,8 +189,8 @@ app.post("/genres", async (req, res): Promise<any> => {
                 }
             }
         })
-        
-        if(existingGenre){
+
+        if (existingGenre) {
             return res.status(408).send({ message: "Já existe um gênero com esse nome" })
         }
         const addNewGenre = await prisma.genre.create({
@@ -203,6 +203,48 @@ app.post("/genres", async (req, res): Promise<any> => {
     } catch (error) {
         console.log(error);
         res.status(500).send({ message: "Houve uma falha ao adicionar um novo gênero" })
+    }
+})
+
+app.get("/genres", async (_, res): Promise<any> => {
+    try {
+        const genres = await prisma.genre.findMany({
+            orderBy: {
+                "name": "asc"
+            }
+        });
+
+        res.status(200).json(genres);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Houve algum erro ao buscar os gêneros" })
+    }
+})
+
+app.delete("/genres/:id", async (req, res): Promise<any> => {
+    const { id } = req.params;
+
+    try {
+        const genre = await prisma.genre.findUnique({
+            where: {
+                id: Number(id)
+            }
+        })
+        
+        if(!genre){
+            return res.status(404).send({ message: "Gênero não encontrado" })
+        }
+
+        await prisma.genre.delete({
+            where: {
+                id: Number(id)
+            }
+        })
+    
+        res.status(200).send({ message: "Gênero removido com sucesso"} )
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Houve um erro ao tentar deletar o gênero" })
     }
 })
 
