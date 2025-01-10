@@ -124,6 +124,87 @@ app.get("/movies/:genreName", async (req, res) => {
     }
 })
 
+app.put("/movies/genres/:id", async (req, res):Promise<any> => {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if(!name) {
+        return res.status(400).send({ message: "O nome é necessário"} )
+    }
+
+    try {
+        const genre = await prisma.genre.findUnique({
+            where: {
+                id: Number(id)
+            }
+        });
+        if(!genre) {
+            return res.status(404).send({ message: "Gênero não encontrado" });
+        }
+
+        const existingGenre = await prisma.genre.findFirst({
+            where: {
+                name: {
+                    equals: name,
+                    mode: "insensitive",
+                },
+                id: {
+                    not: Number(id),
+                }
+            }
+        })
+
+        if(existingGenre){
+            return res.status(409).send({ message: "Este nome de gênero já existe." })
+        }
+
+        const updatedGenre = await prisma.genre.update({
+            where: {
+                id: Number(id),
+            },
+            data: { 
+                name: name, 
+            }
+        });
+        res.status(200).json(updatedGenre);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Houve um problema ao atualizar o gênero" });
+    }
+})
+
+app.post("/movies/genres", async (req, res): Promise<any> => {
+    const { name } = req.body;
+    if(!name){
+        return res.status(400).send({ message: "O gênero precisa ter um nome." })
+    }
+
+    try {
+        const existingGenre = await prisma.genre.findFirst({
+            where: {
+                name: {
+                    equals: name,
+                    mode: "insensitive"
+                }
+            }
+        })
+        
+        if(existingGenre){
+            return res.status(408).send({ message: "Já existe um gênero com esse nome" })
+        }
+        const addNewGenre = await prisma.genre.create({
+            data: {
+                name: name
+            }
+        });
+        res.status(200).json(addNewGenre)
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Houve uma falha ao adicionar um novo gênero" })
+    }
+})
+
 app.listen(port, () => {
     console.log(`Servidor em execução na porta ${port}`);
 })
