@@ -124,7 +124,7 @@ app.get("/movies/:genreName", async (req, res) => {
     }
 })
 
-app.put("/movies/genres/:id", async (req, res):Promise<any> => {
+app.put("/genres/:id", async (req, res):Promise<any> => {
     const { id } = req.params;
     const { name } = req.body;
 
@@ -173,8 +173,9 @@ app.put("/movies/genres/:id", async (req, res):Promise<any> => {
     }
 })
 
-app.post("/movies/genres", async (req, res): Promise<any> => {
+app.post("/genres", async (req, res): Promise<any> => {
     const { name } = req.body;
+
     if(!name){
         return res.status(400).send({ message: "O gênero precisa ter um nome." })
     }
@@ -197,7 +198,7 @@ app.post("/movies/genres", async (req, res): Promise<any> => {
                 name: name
             }
         });
-        res.status(200).json(addNewGenre)
+        res.status(201).json(addNewGenre)
 
     } catch (error) {
         console.log(error);
